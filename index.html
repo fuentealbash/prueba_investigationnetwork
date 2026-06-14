@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ScienceNet Valdivia | Red mundial de investigadoras</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#071018;--panel:#0d1826;--panel2:#132235;--line:#263b56;--text:#eaf2fb;--muted:#8fa6bf;
+      --teal:#19d4bd;--violet:#9b7cff;--rose:#fb5d7a;--amber:#f5b041;--green:#42d989;--sky:#4cc9f0;--orange:#ff9f43;--gray:#aab6c4;
+      --shadow:0 18px 60px rgba(0,0,0,.35);
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden}
+    .app{display:grid;grid-template-rows:auto auto 1fr;height:100vh}
+    header{display:flex;align-items:center;gap:14px;padding:14px 18px;border-bottom:1px solid var(--line);background:rgba(7,16,24,.94);backdrop-filter:blur(14px);z-index:20}
+    .brand{font-family:'Playfair Display',serif;font-size:26px;letter-spacing:.2px;color:var(--teal);white-space:nowrap}.brand span{color:var(--text)}
+    .search{position:relative;min-width:270px;max-width:420px;flex:1}.search input{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:14px;color:var(--text);padding:12px 14px 12px 42px;outline:none}.search input:focus{border-color:var(--teal)}.search:before{content:'🔎';position:absolute;left:14px;top:50%;transform:translateY(-50%);opacity:.7}
+    #results{display:none;position:absolute;top:50px;left:0;right:0;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden;z-index:99}.result{padding:12px 14px;border-bottom:1px solid var(--line);cursor:pointer}.result:hover{background:var(--panel2)}.result small{color:var(--muted)}
+    .top-actions{display:flex;gap:8px;align-items:center}.btn{border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:10px 12px;border-radius:12px;font-weight:700;cursor:pointer}.btn:hover,.btn.active{border-color:var(--teal);color:var(--teal)}
+    .stats{display:grid;grid-template-columns:repeat(5,1fr);border-bottom:1px solid var(--line);background:var(--panel);z-index:10}.stat{padding:14px 18px;border-right:1px solid var(--line)}.stat:last-child{border-right:0}.stat b{display:block;font-size:25px;color:var(--teal);font-family:'Playfair Display',serif}.stat span{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+    main{position:relative;overflow:hidden}.canvas-wrap{position:absolute;inset:0}svg{width:100%;height:100%;display:block}.sphere{fill:#071018}.graticule{fill:none;stroke:#243951;stroke-width:.6px;opacity:.8}.land{fill:#10223a;stroke:#284564;stroke-width:.5px}.country-glow{fill:#173152;opacity:.25}
+    .link{stroke-linecap:round;opacity:.78}.link.dim{opacity:.06}.link.highlight{opacity:1;filter:drop-shadow(0 0 4px currentColor)}
+    .node{cursor:pointer}.node circle{stroke-width:2.5px;vector-effect:non-scaling-stroke;filter:drop-shadow(0 5px 10px rgba(0,0,0,.45))}.node text{font-size:12px;font-weight:800;fill:var(--text);paint-order:stroke;stroke:#071018;stroke-width:4px;vector-effect:non-scaling-stroke;pointer-events:none}.node.dim{opacity:.12}.node.selected circle{stroke-width:4px;filter:drop-shadow(0 0 12px currentColor)}
+    .filters{position:absolute;left:16px;top:16px;width:290px;background:rgba(13,24,38,.95);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:16px;z-index:9;transform:translateX(-330px);transition:.25s}.filters.open{transform:translateX(0)}.filters h3{margin-bottom:12px}.field{margin:12px 0}.field label{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:800;margin-bottom:6px}.field select{width:100%;padding:10px;border-radius:10px;background:#081421;color:var(--text);border:1px solid var(--line)}.chips{display:flex;flex-wrap:wrap;gap:7px}.chip{font-size:12px;border:1px solid var(--line);border-radius:999px;padding:7px 10px;background:#081421;color:var(--muted);cursor:pointer}.chip.on{background:var(--teal);color:#061014;border-color:var(--teal);font-weight:800}
+    .legend{position:absolute;left:16px;bottom:16px;background:rgba(13,24,38,.95);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:14px;z-index:8;width:255px}.legend h4,.analysis h4{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:10px}.leg{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin:7px 0}.dot{width:11px;height:11px;border-radius:50%}.sample{height:4px;width:34px;border-radius:99px}.dash{height:0;border-top:2px dashed var(--gray);width:34px}
+    .analysis{position:absolute;right:16px;top:16px;width:280px;background:rgba(13,24,38,.95);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:14px;z-index:8;display:none}.analysis.open{display:block}.rank{padding:10px;border:1px solid var(--line);border-radius:12px;margin:8px 0;cursor:pointer;background:#081421}.rank:hover{border-color:var(--teal)}.rank b{display:block}.rank small{color:var(--muted)}.bar{height:4px;background:#203650;border-radius:99px;margin-top:8px;overflow:hidden}.bar i{display:block;height:100%;background:var(--teal)}
+    .profile{position:absolute;right:0;top:0;bottom:0;width:min(430px,92vw);background:var(--panel);border-left:1px solid var(--line);box-shadow:var(--shadow);z-index:30;transform:translateX(102%);transition:.3s;overflow:auto}.profile.open{transform:translateX(0)}.p-head{position:sticky;top:0;background:rgba(13,24,38,.96);backdrop-filter:blur(12px);display:flex;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line);z-index:2}.close{border:0;background:transparent;color:var(--muted);font-size:26px;cursor:pointer}.p-body{padding:22px}.avatar{width:82px;height:82px;border-radius:50%;display:grid;place-items:center;font-family:'Playfair Display',serif;font-size:30px;margin-bottom:14px;border:3px solid var(--teal);background:rgba(25,212,189,.14)}.p-name{font-family:'Playfair Display',serif;font-size:30px;line-height:1.05}.p-sub{color:var(--muted);margin:8px 0 14px}.tags{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0}.tag{font-size:11px;font-weight:800;border-radius:999px;padding:6px 9px;background:#081421;color:var(--teal);border:1px solid var(--line)}.metrics{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:16px;overflow:hidden;margin:18px 0}.metric{padding:12px;text-align:center;border-right:1px solid var(--line)}.metric:last-child{border-right:0}.metric b{font-family:'Playfair Display',serif;color:var(--teal);font-size:24px}.metric span{display:block;font-size:10px;color:var(--muted);text-transform:uppercase}.section{margin:22px 0}.section h3{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:10px}.section p{line-height:1.65;color:#c8d8e8}.item{background:#081421;border:1px solid var(--line);border-radius:14px;padding:12px;margin:8px 0}.item small{color:var(--muted)}.links{display:grid;grid-template-columns:1fr 1fr;gap:8px}.links a{color:var(--text);text-decoration:none;border:1px solid var(--line);background:#081421;border-radius:12px;padding:10px;font-weight:700;font-size:12px}.links a:hover{border-color:var(--teal);color:var(--teal)}.conn{display:flex;gap:10px;align-items:center;justify-content:space-between;cursor:pointer}.conn:hover{border-color:var(--teal)}
+    .tooltip{position:fixed;z-index:100;pointer-events:none;background:rgba(7,16,24,.95);border:1px solid var(--line);border-radius:12px;padding:10px 12px;box-shadow:var(--shadow);display:none;max-width:250px}.tooltip b{display:block}.tooltip small{color:var(--muted)}
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:none;align-items:center;justify-content:center}.modal.open{display:flex}.modal-box{width:min(620px,94vw);background:var(--panel);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:24px}.drop{border:2px dashed var(--line);border-radius:18px;padding:32px;text-align:center;color:var(--muted);margin:16px 0;background:#081421}.code{background:#081421;border:1px solid var(--line);border-radius:14px;padding:14px;color:#b7c7d8;font-size:12px;overflow:auto}
+    @media(max-width:900px){body{overflow:auto}.app{height:auto;min-height:100vh}.stats{grid-template-columns:repeat(2,1fr)}main{height:78vh}.brand{font-size:21px}.top-actions{overflow:auto}.btn{white-space:nowrap}.legend{display:none}.analysis{left:16px;right:auto;top:76px}.search{min-width:180px}.profile{width:100%}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="brand">Science<span>Net</span></div>
+      <div class="search"><input id="search" placeholder="Buscar investigadora, institución, país o área..."><div id="results"></div></div>
+      <div class="top-actions">
+        <button class="btn" id="modeBtn" onclick="toggleMode()">🕸 Modo red</button>
+        <button class="btn" onclick="toggleFilters()">⚙ Filtros</button>
+        <button class="btn" id="analysisBtn" onclick="toggleAnalysis()">📊 Análisis</button>
+        <button class="btn" onclick="clearRevealedNetwork()">🧹 Limpiar red</button>
+        <button class="btn" onclick="openImport()">↑ Importar</button>
+      </div>
+    </header>
+    <section class="stats">
+      <div class="stat"><b id="stResearchers">0</b><span>Investigadoras/es</span></div>
+      <div class="stat"><b id="stCountries">0</b><span>Países</span></div>
+      <div class="stat"><b id="stInst">0</b><span>Instituciones</span></div>
+      <div class="stat"><b id="stCollab">0</b><span>Colaboraciones</span></div>
+      <div class="stat"><b id="stPubs">0</b><span>Publicaciones</span></div>
+    </section>
+    <main id="main">
+      <div class="canvas-wrap"><svg id="map"></svg></div>
+      <aside class="filters" id="filters">
+        <h3>Filtros</h3>
+        <div class="field"><label>País</label><select id="filterCountry" onchange="applyFilters()"><option value="">Todos</option></select></div>
+        <div class="field"><label>Disciplina</label><select id="filterDiscipline" onchange="applyFilters()"><option value="">Todas</option></select></div>
+        <div class="field"><label>Profesión</label><select id="filterProfession" onchange="applyFilters()"><option value="">Todas</option></select></div>
+        <div class="field"><label>Institución</label><select id="filterInstitution" onchange="applyFilters()"><option value="">Todas</option></select></div>
+        <div class="field"><label>Actividad</label><div class="chips" id="activityChips"></div></div>
+        <button class="btn" style="width:100%" onclick="resetFilters()">Limpiar filtros</button>
+      </aside>
+      <aside class="analysis" id="analysis"><h4>Análisis de red</h4><div id="analysisList"></div></aside>
+      <div class="legend"><h4>Leyenda</h4><div id="disciplineLegend"></div><hr style="border-color:var(--line);border-style:solid;border-width:1px 0 0;margin:10px 0"><div class="leg"><span class="dash"></span>Contacto ocasional</div><div class="leg"><span class="sample" style="background:var(--teal)"></span>Proyecto conjunto</div><div class="leg"><span class="sample" style="background:var(--violet);height:5px"></span>Coautoría</div><div class="leg"><span class="sample" style="background:var(--amber);height:6px"></span>Colaboración frecuente</div></div>
+      <aside class="profile" id="profile"><div class="p-head"><b>Perfil académico</b><button class="close" onclick="closeProfile()">×</button></div><div class="p-body" id="profileBody"></div></aside>
+      <div class="tooltip" id="tip"></div>
+    </main>
+  </div>
+
+  <div class="modal" id="importModal"><div class="modal-box"><h2>Importar datos desde CSV/Excel</h2><p style="color:var(--muted);line-height:1.55">Esta maqueta ya deja preparada la estructura para subir datos reales. Para GitHub Pages, lo más simple es reemplazar el arreglo <b>researchers</b> y <b>links</b> dentro del HTML, o luego conectarlo a un archivo JSON/CSV.</p><div class="drop">📂 Zona futura para subir CSV/Excel<br><small>Columnas sugeridas: id, nombre, profesión, institución, país, lat, lon, disciplina, actividad, publicaciones, conexiones</small></div><div class="code">Ejemplo conexión: { source: 'viviana', target: 'maria-paz', type: 'frequent' }</div><br><button class="btn" onclick="closeImport()">Cerrar</button></div></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
+  <script>
+    const colors={
+      'Enfermería':'#19d4bd','Bioquímica':'#9b7cff','Medicina':'#fb5d7a','Salud Pública':'#42d989','Educación':'#4cc9f0','Ingeniería':'#ff9f43','Ciencias Sociales':'#e879f9','Ciencias Básicas':'#aab6c4','Tecnología Médica':'#f5b041'
+    };
+    const relation={occasional:{label:'Contacto ocasional',color:'#aab6c4',width:1.2,dash:'6 6'},project:{label:'Proyecto conjunto',color:'#19d4bd',width:2.2,dash:null},coauthor:{label:'Coautoría',color:'#9b7cff',width:3.2,dash:null},frequent:{label:'Colaboración frecuente',color:'#f5b041',width:4.2,dash:null}};
+    const researchers=[
+      {id:'viviana',name:'Viviana Rodas',initials:'VR',profession:'Enfermera',role:'Docente e Investigadora',institution:'Universidad Austral de Chile',country:'Chile',city:'Valdivia',lat:-39.814,lon:-73.16,discipline:'Enfermería',activities:['Docencia','Investigación','Extensión'],bio:'Enfermera, docente e investigadora vinculada al área de salud comunitaria, formación clínica y colaboración académica interdisciplinaria.',publications:['Redes de cuidado y salud comunitaria en el sur de Chile','Docencia clínica en carreras de la salud','Interdisciplina en formación sanitaria'],projects:['Red de colaboración en salud comunitaria','Buenas prácticas de docencia clínica'],links:{ORCID:'#','Google Scholar':'#',LinkedIn:'#',Correo:'mailto:viviana.rodas@example.cl'}},
+      {id:'maria-paz',name:'María Paz Miró',initials:'MM',profession:'Bioquímica',role:'Docente e Investigadora',institution:'Universidad Austral de Chile',country:'Chile',city:'Valdivia',lat:-39.820,lon:-73.105,discipline:'Bioquímica',activities:['Docencia','Investigación','Gestión'],bio:'Bioquímica, docente e investigadora orientada a ciencias básicas, análisis molecular y colaboración científica con redes nacionales e internacionales.',publications:['Biomarcadores y análisis molecular aplicado','Estrategias docentes en ciencias básicas','Colaboración interdisciplinaria en salud'],projects:['Red de bioquímica aplicada','Innovación docente en ciencias de la salud'],links:{ORCID:'#','ResearchGate':'#','Google Scholar':'#',Correo:'mailto:mariapaz.miro@example.cl'}},
+      {id:'paulo',name:'Paulo Reyes',initials:'PR',profession:'Enfermero',role:'Investigador clínico',institution:'Universidad de La Frontera',country:'Chile',city:'Temuco',lat:-38.7359,lon:-72.5904,discipline:'Enfermería',activities:['Docencia','Investigación'],bio:'Investigador en cuidados críticos y seguridad del paciente.',publications:['Cuidados críticos y seguridad clínica','Protocolos de enfermería basada en evidencia'],projects:['Red sur de enfermería clínica'],links:{ORCID:'#'}},
+      {id:'carmen',name:'Carmen Leiva',initials:'CL',profession:'Matrona',role:'Investigadora en salud materna',institution:'Servicio de Salud Los Ríos',country:'Chile',city:'Valdivia',lat:-39.9,lon:-73.1,discipline:'Salud Pública',activities:['Investigación','Extensión'],bio:'Profesional dedicada a salud materna, salud rural y continuidad del cuidado.',publications:['Salud materna en territorios rurales'],projects:['Salud perinatal comunitaria'],links:{LinkedIn:'#'}},
+      {id:'felipe',name:'Felipe Araya',initials:'FA',profession:'Médico',role:'Investigador clínico',institution:'Hospital Base Valdivia',country:'Chile',city:'Valdivia',lat:-39.83,lon:-73.21,discipline:'Medicina',activities:['Investigación','Gestión'],bio:'Médico vinculado a investigación clínica, epidemiología y redes asistenciales.',publications:['Epidemiología clínica regional'],projects:['Vigilancia epidemiológica local'],links:{ORCID:'#'}},
+      {id:'isabela',name:'Isabela Ferreira',initials:'IF',profession:'Bióloga Molecular',role:'Investigadora postdoctoral',institution:'Universidade de São Paulo',country:'Brasil',city:'São Paulo',lat:-23.55,lon:-46.63,discipline:'Ciencias Básicas',activities:['Investigación'],bio:'Investigadora en genómica funcional, metabolómica y biología molecular.',publications:['Multi-omics en enfermedades metabólicas'],projects:['Red latinoamericana de ciencias básicas'],links:{ORCID:'#','Google Scholar':'#'}},
+      {id:'alejandro',name:'Alejandro Ruiz',initials:'AR',profession:'Bioquímico',role:'Catedrático',institution:'Universidad Complutense de Madrid',country:'España',city:'Madrid',lat:40.4168,lon:-3.7038,discipline:'Bioquímica',activities:['Docencia','Investigación'],bio:'Especialista en proteómica, enzimología y colaboración iberoamericana.',publications:['Proteómica aplicada a salud humana'],projects:['Consorcio iberoamericano de bioquímica'],links:{ORCID:'#'}},
+      {id:'sophie',name:'Sophie Blanchard',initials:'SB',profession:'Farmacóloga',role:'Investigadora senior',institution:'Institut Pasteur',country:'Francia',city:'París',lat:48.8566,lon:2.3522,discipline:'Ciencias Básicas',activities:['Investigación','Gestión'],bio:'Investigadora en farmacología molecular y enfermedades metabólicas.',publications:['Drug screening in metabolic disease'],projects:['Rare-Met Europe'],links:{'Google Scholar':'#'}},
+      {id:'kenji',name:'Kenji Nakamura',initials:'KN',profession:'Ingeniero IA',role:'Investigador principal',institution:'RIKEN Center for AIP',country:'Japón',city:'Tokio',lat:35.6762,lon:139.6503,discipline:'Ingeniería',activities:['Docencia','Investigación'],bio:'Investigador en inteligencia artificial aplicada a imágenes biomédicas.',publications:['Deep learning for medical imaging'],projects:['AI for diagnosis'],links:{ORCID:'#'}},
+      {id:'amara',name:'Amara Okafor',initials:'AO',profession:'Ingeniera de Datos',role:'Profesora asociada',institution:'University of Lagos',country:'Nigeria',city:'Lagos',lat:6.5244,lon:3.3792,discipline:'Ingeniería',activities:['Docencia','Investigación','Extensión'],bio:'Investigadora en datos de salud pública y sistemas distribuidos.',publications:['Distributed data pipelines for health'],projects:['African health data network'],links:{LinkedIn:'#'}},
+      {id:'priya',name:'Priya Mehta',initials:'PM',profession:'Científica de Datos',role:'Investigadora y docente',institution:'IIT Bombay',country:'India',city:'Mumbai',lat:19.076,lon:72.8777,discipline:'Ingeniería',activities:['Docencia','Investigación'],bio:'Especialista en epidemiología computacional y modelos bayesianos.',publications:['Bayesian disease surveillance'],projects:['Asia-Pacific computational epidemiology'],links:{ORCID:'#'}},
+      {id:'elena',name:'Elena Papadopoulos',initials:'EP',profession:'Socióloga',role:'Profesora titular',institution:'Panteion University',country:'Grecia',city:'Atenas',lat:37.9838,lon:23.7275,discipline:'Ciencias Sociales',activities:['Docencia','Investigación','Gestión'],bio:'Investiga desigualdades sociales, género y acceso a salud.',publications:['Gender disparities in healthcare access'],projects:['European Gender and Inequality Studies'],links:{'Google Scholar':'#'}},
+      {id:'rania',name:'Rania Al-Hassan',initials:'RA',profession:'Antropóloga',role:'Investigadora postdoctoral',institution:'American University of Beirut',country:'Líbano',city:'Beirut',lat:33.8938,lon:35.5018,discipline:'Ciencias Sociales',activities:['Investigación'],bio:'Antropóloga médica enfocada en desplazamiento, salud y conflictos.',publications:['Healthcare access among refugees'],projects:['Health systems in conflict zones'],links:{ORCID:'#'}},
+      {id:'marcus',name:'Marcus Johansson',initials:'MJ',profession:'Economista de Salud',role:'Investigador senior',institution:'Karolinska Institutet',country:'Suecia',city:'Estocolmo',lat:59.3293,lon:18.0686,discipline:'Salud Pública',activities:['Docencia','Investigación'],bio:'Investigador en evaluación económica y políticas públicas de salud.',publications:['Cost-effectiveness of health interventions'],projects:['Nordic health economics network'],links:{ORCID:'#'}}
+    ];
+    const links=[
+      {source:'viviana',target:'maria-paz',type:'frequent'},
+      {source:'viviana',target:'paulo',type:'coauthor'},{source:'viviana',target:'carmen',type:'project'},{source:'viviana',target:'felipe',type:'project'},
+      {source:'maria-paz',target:'isabela',type:'coauthor'},{source:'maria-paz',target:'alejandro',type:'project'},{source:'maria-paz',target:'sophie',type:'coauthor'},
+      {source:'kenji',target:'amara',type:'frequent'},{source:'kenji',target:'priya',type:'project'},{source:'amara',target:'priya',type:'coauthor'},
+      {source:'elena',target:'rania',type:'project'},{source:'elena',target:'marcus',type:'coauthor'},
+      {source:'marcus',target:'rania',type:'occasional'}
+    ];
+    const byId=Object.fromEntries(researchers.map(d=>[d.id,d]));
+    const PRIMARY_IDS = new Set(['viviana','maria-paz']);
+    researchers.forEach(r=>r.connections=links.filter(l=>l.source===r.id||l.target===r.id).map(l=>({id:l.source===r.id?l.target:l.source,type:l.type})));
+
+    const main=document.getElementById('main'), svg=d3.select('#map'); let width=main.clientWidth,height=main.clientHeight, mode='map', transform=d3.zoomIdentity, simulation=null, selected=null;
+    let mapOffsets = new Map();
+    const revealedLinks = new Set(); // conexiones que el usuario va revelando al hacer clic
+    const revealedNodes = new Set(['viviana','maria-paz']); // nodos visibles (parten solo las primarias)
+    const projection=d3.geoNaturalEarth1().scale(width/5.25).translate([width/2,height/2]); const path=d3.geoPath(projection);
+    const root=svg.append('g'), mapG=root.append('g'), linkG=root.append('g'), nodeG=root.append('g');
+    const zoom=d3.zoom().scaleExtent([.75,8]).on('zoom',e=>{
+      transform=e.transform;
+      if(mode==='map'){
+        root.attr('transform',transform);
+        renderPositions();
+      }
+    });
+    svg.call(zoom);
+    mapG.append('path').datum({type:'Sphere'}).attr('class','sphere').attr('d',path); mapG.append('path').datum(d3.geoGraticule10()).attr('class','graticule').attr('d',path);
+    d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json').then(world=>{const countries=topojson.feature(world,world.objects.countries); mapG.selectAll('.land').data(countries.features).join('path').attr('class','land').attr('d',path); init();}).catch(()=>init());
+
+    function init(){buildStats();buildControls();draw();applyNodeVisibility();renderPositions();}
+    function draw(){
+      linkG.selectAll('line').data(links).join('line')
+        .attr('class','link hidden-link')
+        .attr('stroke',d=>relation[d.type].color)
+        .attr('stroke-width',d=>relation[d.type].width)
+        .attr('stroke-dasharray',d=>relation[d.type].dash||null)
+        .style('display','none');
+      const n=nodeG.selectAll('g').data(researchers).join('g').attr('class','node')
+        .on('click',(e,d)=>{e.stopPropagation();openProfile(d.id);})
+        .on('mouseenter',(e,d)=>{showTip(e,d);})
+        .on('mousemove',moveTip)
+        .on('mouseleave',()=>{hideTip();});
+      n.append('circle').attr('r',d=>d.id==='viviana'||d.id==='maria-paz'?13:10).attr('fill',d=>hexA(colors[d.discipline]||'#aab6c4',.24)).attr('stroke',d=>colors[d.discipline]||'#aab6c4');
+      n.append('text').attr('class','main-label').attr('text-anchor','middle').attr('y',-17).text(d=>d.name.split(' ').slice(0,2).join(' '));
+      n.append('text').attr('class','detail-label').attr('text-anchor','middle').attr('y',-2).text(d=>d.profession+' · '+d.institution).style('opacity',0);
+      svg.on('click',()=>closeProfile());
+    }
+    function refId(ref){return typeof ref==='object'?ref.id:ref;}
+    function nodeRef(ref){return typeof ref==='object'?ref:byId[ref];}
+    function geoPos(d){return projection([d.lon,d.lat]);}
+    function screen(d){const p=geoPos(d);return [transform.applyX(p[0]),transform.applyY(p[1])];}
+    function nodeBaseRadius(d){return (d.id==='viviana'||d.id==='maria-paz')?13:10;}
+    function renderPositions(){
+      if(mode==='map') computeMapOffsets();
+      linkG.selectAll('line')
+        .attr('x1',d=>pos(nodeRef(d.source))[0]).attr('y1',d=>pos(nodeRef(d.source))[1])
+        .attr('x2',d=>pos(nodeRef(d.target))[0]).attr('y2',d=>pos(nodeRef(d.target))[1])
+        .attr('stroke-width',d=>relation[d.type].width/(mode==='map'?Math.sqrt(transform.k):1));
+      updateLinkVisibility();
+      nodeG.selectAll('g').attr('transform',d=>`translate(${pos(d)[0]},${pos(d)[1]})`);
+      scaleMapNodes();
+    }
+    function computeMapOffsets(){
+      const k = transform.k || 1;
+      // Pequeña simulación en coordenadas de pantalla: separa puntos cercanos,
+      // pero los mantiene ligados a su ubicación geográfica real.
+      const simNodes = researchers.map(r=>{
+        const [ax,ay]=screen(r);
+        return {id:r.id, ax, ay, x:ax, y:ay, r:mapCollisionRadius(r)};
+      });
+      d3.forceSimulation(simNodes)
+        .stop()
+        .force('x',d3.forceX(d=>d.ax).strength(k>3?0.86:0.62))
+        .force('y',d3.forceY(d=>d.ay).strength(k>3?0.86:0.62))
+        .force('collide',d3.forceCollide(d=>d.r).strength(1).iterations(3))
+        .tick(55);
+      mapOffsets = new Map(simNodes.map(n=>[n.id,[(n.x-n.ax)/k,(n.y-n.ay)/k]]));
+    }
+    function mapCollisionRadius(d){
+      const k=transform.k||1;
+      const isPrimary=d.id==='viviana'||d.id==='maria-paz';
+      // A mayor zoom, damos más aire para que aparezcan nombres sin taparse.
+      if(k>=3) return isPrimary?42:36;
+      if(k>=1.8) return isPrimary?32:27;
+      return isPrimary?20:17;
+    }
+    function pos(d){
+      if(mode==='network'&&d.x!=null) return [d.x,d.y];
+      const p=geoPos(d);
+      const off=mapOffsets.get(d.id)||[0,0];
+      return [p[0]+off[0],p[1]+off[1]];
+    }
+    function scaleMapNodes(){
+      const k = mode==='map' ? transform.k : 1;
+      nodeG.selectAll('g').each(function(d){
+        const base=nodeBaseRadius(d);
+        const g=d3.select(this);
+        const visualR = k>=3 ? base+1 : base;
+        g.select('circle').attr('r',visualR/k);
+        g.select('text.main-label')
+          .text(d.name)
+          .attr('y',-(visualR+8)/k)
+          .style('font-size',((k>=3?13:12)/k)+'px')
+          .style('opacity', k<1.05 && !(d.id==='viviana'||d.id==='maria-paz') ? .5 : 1);
+        g.select('text.detail-label')
+          .style('opacity', 0);
+      });
+    }
+    function toggleMode(){
+      mode=mode==='map'?'network':'map';
+      document.getElementById('modeBtn').textContent=mode==='map'?'🕸 Modo red':'🗺 Modo mapa';
+      document.getElementById('modeBtn').classList.toggle('active',mode==='network');
+      if(mode==='network'){
+        root.attr('transform',d3.zoomIdentity);
+        startSim();
+      } else {
+        if(simulation)simulation.stop();
+        researchers.forEach(d=>{d.x=null;d.y=null});
+        root.attr('transform',transform);
+        renderPositions();
+        mapG.transition().style('opacity',1);
+      }
+    }
+    function startSim(){mapG.transition().style('opacity',.2);researchers.forEach(d=>{const p=screen(d);d.x=p[0];d.y=p[1]});simulation=d3.forceSimulation(researchers).force('link',d3.forceLink(links).id(d=>d.id).distance(145).strength(.7)).force('charge',d3.forceManyBody().strength(-430)).force('center',d3.forceCenter(width/2,height/2)).force('collide',d3.forceCollide(46)).on('tick',renderPositions)}
+
+    function buildStats(){document.getElementById('stResearchers').textContent=researchers.length;document.getElementById('stCountries').textContent=new Set(researchers.map(d=>d.country)).size;document.getElementById('stInst').textContent=new Set(researchers.map(d=>d.institution)).size;document.getElementById('stCollab').textContent=links.length;document.getElementById('stPubs').textContent=researchers.reduce((a,d)=>a+d.publications.length,0)}
+    function buildControls(){
+      fill('filterCountry',[...new Set(researchers.map(d=>d.country))].sort());fill('filterDiscipline',[...new Set(researchers.map(d=>d.discipline))].sort());fill('filterProfession',[...new Set(researchers.map(d=>d.profession))].sort());fill('filterInstitution',[...new Set(researchers.map(d=>d.institution))].sort());
+      document.getElementById('activityChips').innerHTML=[...new Set(researchers.flatMap(d=>d.activities))].sort().map(a=>`<button class="chip" onclick="this.classList.toggle('on');applyFilters()">${a}</button>`).join('');
+      document.getElementById('disciplineLegend').innerHTML=[...new Set(researchers.map(d=>d.discipline))].map(d=>`<div class="leg"><span class="dot" style="background:${colors[d]}"></span>${d}</div>`).join('');
+    }
+    function fill(id,arr){const el=document.getElementById(id);arr.forEach(v=>el.insertAdjacentHTML('beforeend',`<option>${v}</option>`))}
+    function applyFilters(){const f={country:val('filterCountry'),discipline:val('filterDiscipline'),profession:val('filterProfession'),institution:val('filterInstitution'),acts:[...document.querySelectorAll('#activityChips .on')].map(b=>b.textContent)};window.currentFilterOk=d=>(!f.country||d.country===f.country)&&(!f.discipline||d.discipline===f.discipline)&&(!f.profession||d.profession===f.profession)&&(!f.institution||d.institution===f.institution)&&(!f.acts.length||f.acts.some(a=>d.activities.includes(a)));nodeG.selectAll('g').style('display',d=>revealedNodes.has(d.id)&&window.currentFilterOk(d)?null:'none');updateLinkVisibility()}
+    function val(id){return document.getElementById(id).value} function resetFilters(){['filterCountry','filterDiscipline','filterProfession','filterInstitution'].forEach(id=>document.getElementById(id).value='');document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));applyFilters()} function toggleFilters(){document.getElementById('filters').classList.toggle('open')}
+
+    function openProfile(id){if(selected===id){closeProfile();return;}selected=id;const r=byId[id];revealConnections(id);highlight(id);const color=colors[r.discipline]||'#aab6c4';document.getElementById('profileBody').innerHTML=`<div class="avatar" style="border-color:${color};color:${color};background:${hexA(color,.16)}">${r.initials}</div><h1 class="p-name">${r.name}</h1><div class="p-sub">${r.role} · ${r.profession}<br>${r.institution} · ${r.city}, ${r.country}</div><div class="tags"><span class="tag">${r.discipline}</span>${r.activities.map(a=>`<span class="tag">${a}</span>`).join('')}</div><div class="metrics"><div class="metric"><b>${r.publications.length}</b><span>Publicaciones</span></div><div class="metric"><b>${r.projects.length}</b><span>Proyectos</span></div><div class="metric"><b>${r.connections.length}</b><span>Colaboradores</span></div></div><div class="section"><h3>Biografía</h3><p>${r.bio}</p></div><div class="section"><h3>Publicaciones destacadas</h3>${r.publications.map(p=>`<div class="item">${p}<br><small>Publicación de ejemplo para maqueta</small></div>`).join('')}</div><div class="section"><h3>Proyectos</h3>${r.projects.map(p=>`<div class="item">${p}<br><small>Proyecto académico / colaboración</small></div>`).join('')}</div><div class="section"><h3>Perfiles y contacto</h3><div class="links">${Object.entries(r.links).map(([k,v])=>`<a href="${v}" target="_blank">${k}</a>`).join('')}</div></div><div class="section"><h3>Colaboradores directos</h3>${r.connections.map(c=>{const o=byId[c.id];return `<div class="item conn" onclick="openProfile('${o.id}')"><span><b>${o.name}</b><br><small>${o.discipline} · ${o.country}</small></span><small style="color:${relation[c.type].color}">${relation[c.type].label}</small></div>`}).join('')}</div>`;document.getElementById('profile').classList.add('open');panTo(r)}
+    function closeProfile(){selected=null;revealedLinks.clear();revealedNodes.clear();PRIMARY_IDS.forEach(id=>revealedNodes.add(id));document.getElementById('profile').classList.remove('open');clearHighlight();applyNodeVisibility();updateLinkVisibility()}
+    function panTo(r){if(mode!=='map')return;const p=projection([r.lon,r.lat]);const k=Math.max(transform.k,1.7);const t=d3.zoomIdentity.translate(width/2-p[0]*k,height/2-p[1]*k).scale(k);svg.transition().duration(650).call(zoom.transform,t)}
+    function edgeKey(d){return [refId(d.source),refId(d.target)].sort().join('|')}
+    function revealConnections(id){
+      // reveal the links involving this node
+      links.forEach(l=>{
+        if(refId(l.source)===id||refId(l.target)===id){
+          revealedLinks.add(edgeKey(l));
+          // also reveal the neighbour node
+          revealedNodes.add(refId(l.source));
+          revealedNodes.add(refId(l.target));
+        }
+      });
+      applyNodeVisibility();
+      updateLinkVisibility();
+    }
+    function applyNodeVisibility(){
+      nodeG.selectAll('g').style('display', d => revealedNodes.has(d.id) ? null : 'none');
+    }
+    function updateLinkVisibility(){const ok=window.currentFilterOk||(()=>true);linkG.selectAll('line').style('display',d=>revealedLinks.has(edgeKey(d))&&ok(nodeRef(d.source))&&ok(nodeRef(d.target))?null:'none')}
+    function clearRevealedNetwork(){
+      revealedLinks.clear();
+      // reset revealed nodes to only primaries
+      revealedNodes.clear();
+      PRIMARY_IDS.forEach(id=>revealedNodes.add(id));
+      selected=null;
+      document.getElementById('profile').classList.remove('open');
+      clearHighlight();
+      applyNodeVisibility();
+      updateLinkVisibility();
+    }
+    function highlight(id){nodeG.selectAll('g').classed('selected',d=>d.id===id).classed('dim',false);linkG.selectAll('line').classed('highlight',d=>revealedLinks.has(edgeKey(d))&&(refId(d.source)===id||refId(d.target)===id)).classed('dim',false);updateLinkVisibility()}
+    function clearHighlight(){nodeG.selectAll('g').classed('dim',false).classed('selected',false);linkG.selectAll('line').classed('dim',false).classed('highlight',false);updateLinkVisibility()}
+    const search=document.getElementById('search'),results=document.getElementById('results');search.addEventListener('input',()=>{const q=search.value.toLowerCase().trim();if(!q){results.style.display='none';return}const hits=researchers.filter(r=>(r.name+r.profession+r.institution+r.country+r.discipline).toLowerCase().includes(q)).slice(0,8);results.innerHTML=hits.map(r=>`<div class="result" onclick="search.value='';results.style.display='none';openProfile('${r.id}')"><b style="color:${colors[r.discipline]}">${r.name}</b><br><small>${r.discipline} · ${r.institution} · ${r.country}</small></div>`).join('');results.style.display=hits.length?'block':'none'});
+    function toggleAnalysis(){const p=document.getElementById('analysis');p.classList.toggle('open');document.getElementById('analysisBtn').classList.toggle('active');const ranked=[...researchers].sort((a,b)=>b.connections.length-a.connections.length);const max=ranked[0].connections.length||1;document.getElementById('analysisList').innerHTML=ranked.slice(0,6).map((r,i)=>`<div class="rank" onclick="openProfile('${r.id}')"><b>${i+1}. ${r.name}</b><small>${r.connections.length} conexiones · ${r.discipline}</small><div class="bar"><i style="width:${r.connections.length/max*100}%"></i></div></div>`).join('')}
+    const tip=document.getElementById('tip');function showTip(e,d){tip.innerHTML=`<b>${d.name}</b><small>${d.role}<br>${d.institution}<br>${d.connections.length} colaboraciones directas</small>`;tip.style.display='block';moveTip(e)}function moveTip(e){tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY+14)+'px'}function hideTip(){tip.style.display='none'}
+    function openImport(){document.getElementById('importModal').classList.add('open')} function closeImport(){document.getElementById('importModal').classList.remove('open')} function hexA(hex,a){const h=hex.replace('#','');const r=parseInt(h.substring(0,2),16),g=parseInt(h.substring(2,4),16),b=parseInt(h.substring(4,6),16);return `rgba(${r},${g},${b},${a})`}
+    window.addEventListener('resize',()=>{width=main.clientWidth;height=main.clientHeight;svg.attr('viewBox',`0 0 ${width} ${height}`);projection.scale(width/5.25).translate([width/2,height/2]);mapG.selectAll('.sphere,.graticule,.land').attr('d',path);if(mode==='map')root.attr('transform',transform);renderPositions();});
+  </script>
+</body>
+</html>
